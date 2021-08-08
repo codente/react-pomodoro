@@ -1,18 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './App.css';
 
-export default function App() {
-  const [timeLeft, setTimeleft] = useState(25 * 60)
+function padTime(time) {
+  return time.toString().padStart(2, '0')
+}
 
-  const minutes = Math.floor(timeLeft / 60)
-  const seconds = (timeLeft - minutes * 60).toString().padStart(2, '0')
+export default function App() {
+  const [title, setTitle] = useState('Let the countdown begin!!!')
+  const [timeLeft, setTimeLeft] = useState(10)
+  const [isRunning, setIsRunning] = useState(false)
+  const intervalRef = useRef(null)
+
+  function startTimer() {
+    if (intervalRef.current != null) return
+    setIsRunning(true)
+    setTitle('You are doing great!!')
+    intervalRef.current = setInterval(() => {
+      setTimeLeft(timeLeft => {
+        if (timeLeft >= 1) return timeLeft - 1
+
+        resetTimer()
+        return 0
+      })
+    }, 1000)
+  }
+
+
+    function stopTimer() {
+      clearInterval(intervalRef.current)
+      setTitle('Keep it up!')
+        setIsRunning(false)
+      intervalRef.current = null
+    }
+
+    function resetTimer() {
+      clearInterval(intervalRef.current)
+      setTitle('Ready to go again?')
+      setTimeLeft(10)
+      intervalRef.current = null
+    }
+
+  const minutes = padTime(Math.floor(timeLeft / 60))
+  const seconds = padTime(timeLeft - minutes * 60)
 
 
 
   return (
     <div className="app">
-      <h2>Pomodoro!</h2>
-      <h3>This is a test</h3>
+      <h2>{title}</h2>
       <div className="timer">
         <span>{minutes}</span>
         <span>:</span>
@@ -20,9 +55,9 @@ export default function App() {
       </div>
 
       <div className="buttons">
-        <button>Start</button>
-        <button>Stop</button>
-        <button>Reset</button>
+        {!isRunning && <button onClick={startTimer}>Start</button>}
+        {isRunning &&<button onClick={stopTimer}>Stop</button>}
+        <button onClick={resetTimer}>Reset</button>
       </div>
     </div>
   );
